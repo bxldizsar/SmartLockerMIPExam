@@ -5,10 +5,7 @@ using SmartLocker.Models;
 
 namespace SmartLocker.Services
 {
-    // makes 120 real parcels in the database
-    // sizes go small, medium, large, small... -> exactly 40 of each
-    // service goes express, standard, express... -> exactly 60 of each
-    // so the minimum counts (30/30/30 and 20/20) are guaranteed, not random
+    // makes 120 real parcels and saves them in the database
     public class DatasetGenerator
     {
         public const int ParcelCount = 120;
@@ -40,10 +37,14 @@ namespace SmartLocker.Services
 
             for (int i = 0; i < ParcelCount; i++)
             {
+                // only the name is random
                 string recipient = firstNames[random.Next(firstNames.Length)] + " " +
                                    lastNames[random.Next(lastNames.Length)];
+
+                // small, medium, large, small... -> exactly 40 of each
                 ParcelSize size = sizes[i % 3];
 
+                // express, standard, express... -> exactly 60 of each
                 Parcel parcel;
                 if (i % 2 == 0)
                 {
@@ -57,7 +58,7 @@ namespace SmartLocker.Services
                 parcels.Add(parcel);
             }
 
-            // ids come from sqlite autoincrement, everything starts as Waiting
+            // sqlite gives the ids, every parcel starts as waiting
             repository.AddParcels(parcels);
             return parcels.Count;
         }

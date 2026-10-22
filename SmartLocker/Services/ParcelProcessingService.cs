@@ -7,7 +7,7 @@ using SmartLocker.Models;
 
 namespace SmartLocker.Services
 {
-    // runs the allocation on ONE background System.Threading.Thread
+    // puts the waiting parcels into boxes on one background thread
     public class ParcelProcessingService
     {
         private readonly IParcelRepository repository;
@@ -16,10 +16,10 @@ namespace SmartLocker.Services
 
         private Thread workerThread;
 
-        // volatile: the ui thread writes it, the worker reads it
+        // volatile: the ui thread sets it, the worker thread reads it
         private volatile bool stopRequested;
 
-        // the form subscribes to these, they are raised on the WORKER thread
+        // the form listens to these, they run on the worker thread
         public event Action<string> ParcelStored;
         public event Action<string> ProcessingFinished;
 
@@ -37,7 +37,7 @@ namespace SmartLocker.Services
             }
         }
 
-        // returns false if a worker is already running -> never 2 threads at once
+        // starts the thread, returns false if it is already running (never 2 threads)
         public bool Start()
         {
             lock (threadLock)
@@ -49,20 +49,20 @@ namespace SmartLocker.Services
 
                 stopRequested = false;
                 workerThread = new Thread(ProcessLoop);
-                workerThread.IsBackground = true;
+                workerThread.IsBackground = true;   // closes together with the app
                 workerThread.Name = "ParcelWorker";
                 workerThread.Start();
                 return true;
             }
         }
 
-        // cooperative stop: the loop checks the flag after the current parcel
+        // the loop stops after the current parcel, no Thread.Abort
         public void RequestStop()
         {
             stopRequested = true;
         }
 
-        // LINQ #1: waiting parcels, express first, then by id
+        // linq #1: only waiting parcels, express first, then by id
         public static List<Parcel> GetWaitingCandidates(List<Parcel> parcels)
         {
             return parcels
@@ -80,11 +80,11 @@ namespace SmartLocker.Services
             {
                 while (!stopRequested)
                 {
-                    // fresh data every round, so a collection done meanwhile is seen
+                    // fresh data every round, so we see parcels collected in the meantime
                     List<Parcel> parcels = repository.GetAllParcels();
                     LockerUnit lockerUnit = repository.LoadLockerUnit();
 
-                    // first candidate (in priority order) that fits a free box
+                    // take the first candidate that fits, the others stay waiting
                     Parcel chosenParcel = null;
                     LockerCompartment chosenBox = null;
                     foreach (Parcel candidate in GetWaitingCandidates(parcels))
@@ -96,27 +96,27 @@ namespace SmartLocker.Services
                             chosenBox = box;
                             break;
                         }
-                        // doesnt fit -> stays waiting, try the next one
                     }
 
+                    // nothing fits anymore -> stop by itself
                     if (chosenParcel == null)
                     {
                         finishReason = "no waiting parcel fits a free compartment, processing finished";
                         break;
                     }
 
-                    // simulate the work, 300 ms express / 600 ms standard (polymorphism)
+                    // 300 or 600 ms, depends on the parcel type (polymorphism)
                     Thread.Sleep(chosenParcel.GetProcessingDelayMs());
 
                     string code = GenerateUniqueCode();
                     bool stored = repository.StoreParcel(chosenParcel.Id, chosenBox.Id, code);
 
+                    // if it failed (rare conflict) the next round tries again
                     if (stored)
                     {
                         TraceLogger.LogStored(chosenParcel.Id, chosenBox.Id);
                         ParcelStored?.Invoke("parcel " + chosenParcel.Id + " stored in box " + chosenBox.Id);
                     }
-                    // if not stored (very rare conflict) the next round just tries again
                 }
 
                 if (stopRequested)
@@ -132,8 +132,7 @@ namespace SmartLocker.Services
             ProcessingFinished?.Invoke(finishReason);
         }
 
-        // 6 digits, 000000-999999, not used by any other stored parcel right now
-        // the unique index + the transaction check in StoreParcel are the final safety net
+        // 6 digits (D6 keeps the zeros, like 004213), not used by another stored parcel
         private string GenerateUniqueCode()
         {
             string code;

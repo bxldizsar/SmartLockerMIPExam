@@ -3,6 +3,7 @@ using SmartLocker.Models;
 
 namespace SmartLocker.Services
 {
+    // handles the pickup with the 6 digit code
     public class PickupService
     {
         private readonly IParcelRepository repository;
@@ -12,7 +13,7 @@ namespace SmartLocker.Services
             this.repository = repository;
         }
 
-        // exactly 6 digits, nothing else
+        // exactly 6 characters, only digits
         public static bool IsValidCodeFormat(string code)
         {
             if (code == null || code.Length != 6)
@@ -30,7 +31,7 @@ namespace SmartLocker.Services
             return true;
         }
 
-        // returns the collected parcel, or null if the code is wrong / already used
+        // returns the collected parcel, or null if the code is wrong or already used
         public Parcel Collect(string code)
         {
             if (!IsValidCodeFormat(code))
@@ -41,6 +42,7 @@ namespace SmartLocker.Services
             Parcel collected = repository.CollectParcel(code);
             if (collected != null)
             {
+                // we log only the ids, never the pickup code
                 TraceLogger.LogCollected(collected.Id, collected.CompartmentId.Value);
             }
             return collected;
