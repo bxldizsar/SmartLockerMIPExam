@@ -8,7 +8,6 @@ using SmartLocker.Services;
 
 namespace SmartLocker.Forms
 {
-    // the whole ui is built in code (no designer file), so everything is in one place
     public class MainForm : Form
     {
         private readonly IParcelRepository repository;
@@ -52,7 +51,6 @@ namespace SmartLocker.Forms
             MinimumSize = new Size(1100, 650);
             StartPosition = FormStartPosition.CenterScreen;
 
-            // --- new parcel ---
             GroupBox grpNew = new GroupBox { Text = "New parcel", Location = new Point(10, 10), Size = new Size(330, 170) };
             grpNew.Controls.Add(new Label { Text = "Recipient:", Location = new Point(10, 28), AutoSize = true });
             txtRecipient = new TextBox { Location = new Point(90, 25), Width = 225, MaxLength = 100 };
@@ -73,7 +71,6 @@ namespace SmartLocker.Forms
             grpNew.Controls.Add(btnAddParcel);
             Controls.Add(grpNew);
 
-            // --- dataset + processing ---
             GroupBox grpProcess = new GroupBox { Text = "Dataset / processing", Location = new Point(350, 10), Size = new Size(200, 170) };
             btnGenerate = new Button { Text = "Generate dataset", Location = new Point(15, 25), Size = new Size(170, 35) };
             btnGenerate.Click += BtnGenerate_Click;
@@ -86,7 +83,6 @@ namespace SmartLocker.Forms
             grpProcess.Controls.Add(btnStop);
             Controls.Add(grpProcess);
 
-            // --- pickup ---
             GroupBox grpPickup = new GroupBox { Text = "Pickup", Location = new Point(560, 10), Size = new Size(200, 170) };
             grpPickup.Controls.Add(new Label { Text = "6-digit pickup code:", Location = new Point(15, 28), AutoSize = true });
             txtPickupCode = new TextBox { Location = new Point(15, 50), Width = 170, MaxLength = 6 };
@@ -96,7 +92,6 @@ namespace SmartLocker.Forms
             grpPickup.Controls.Add(btnCollect);
             Controls.Add(grpPickup);
 
-            // --- counters ---
             GroupBox grpCounts = new GroupBox { Text = "Counters", Location = new Point(770, 10), Size = new Size(450, 170) };
             lblCounts = new Label { Location = new Point(15, 25), Size = new Size(420, 45), Font = new Font(Font, FontStyle.Bold) };
             lblBySize = new Label { Location = new Point(15, 75), Size = new Size(420, 60) };
@@ -106,7 +101,6 @@ namespace SmartLocker.Forms
             grpCounts.Controls.Add(lblStatus);
             Controls.Add(grpCounts);
 
-            // --- parcel table ---
             gridParcels = new DataGridView
             {
                 Location = new Point(10, 190),
@@ -121,7 +115,6 @@ namespace SmartLocker.Forms
             };
             Controls.Add(gridParcels);
 
-            // --- 24 box overview ---
             GroupBox grpBoxes = new GroupBox
             {
                 Text = "Compartments (green = free, red = occupied)",
@@ -136,7 +129,6 @@ namespace SmartLocker.Forms
             FormClosing += MainForm_FormClosing;
         }
 
-        // reloads everything from the database
         private void RefreshAll()
         {
             try
@@ -159,7 +151,6 @@ namespace SmartLocker.Forms
                                  "\nFree compartments: " + lockerUnit.CountFree() + " / " + lockerUnit.Compartments.Count +
                                  "   Total parcels: " + parcels.Count;
 
-                // result of the GroupBy (LINQ #2)
                 string bySize = "";
                 foreach (SizeOccupancy row in lockerUnit.GetOccupancyBySize())
                 {
@@ -324,7 +315,6 @@ namespace SmartLocker.Forms
             }
         }
 
-        // called from the WORKER thread -> must hop to the ui thread with BeginInvoke
         private void OnParcelStored(string message)
         {
             if (IsDisposed || !IsHandleCreated)
@@ -357,7 +347,6 @@ namespace SmartLocker.Forms
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // dont leave the worker writing while the app closes
             processingService.ParcelStored -= OnParcelStored;
             processingService.ProcessingFinished -= OnProcessingFinished;
             processingService.RequestStop();

@@ -32,3 +32,5 @@
 2026-10-22 14:02:55.680 | COLLECTED | ParcelId=3 | CompartmentId=17
 2026-10-22 14:03:20.486 | STORED | ParcelId=49 | CompartmentId=1
 2026-10-22 14:03:20.829 | STORED | ParcelId=51 | CompartmentId=17
+2026-10-22 14:12:35.493 | APP_START
+[2026-10-22 14:12:35.5283120] System.Data.SQLite (Preload): Native library pre-loader is trying to load native SQLite library "C:\Users\boldi\source\repos\SmartLocker\SmartLocker\bin\Debug\x64\SQLite.Interop.dll"...
