@@ -1,7 +1,7 @@
 namespace SmartLocker.Models
 {
-    // the numbers give the real order: small < medium < large
-    // so we never compare sizes as strings (alphabetical would be Large < Medium < Small)
+    // the numbers give the real order small < medium < large
+    // as text it would be sorted alphabetically (large, medium, small), thats wrong
     public enum ParcelSize
     {
         Small = 1,

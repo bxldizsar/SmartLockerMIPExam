@@ -3,27 +3,29 @@ using System.Linq;
 
 namespace SmartLocker.Models
 {
-    // composition: the locker unit creates and owns its compartments
+    // the whole locker, it creates and owns all the boxes (composition)
     public class LockerUnit
     {
         public const int SmallCount = 8;
         public const int MediumCount = 8;
         public const int LargeCount = 8;
 
+        // private list, only this class can add boxes
         private readonly List<LockerCompartment> compartments = new List<LockerCompartment>();
 
-        // outside code can read the list but cant add/remove from it
+        // other classes can read the boxes but cant change the list
         public IReadOnlyList<LockerCompartment> Compartments
         {
             get { return compartments; }
         }
 
+        // the locker makes the box object itself
         public void AddCompartment(int id, ParcelSize size)
         {
             compartments.Add(new LockerCompartment(id, size));
         }
 
-        // the default terminal: ids 1-8 small, 9-16 medium, 17-24 large
+        // builds the default locker: ids 1-8 small, 9-16 medium, 17-24 large
         public static LockerUnit CreateStandardLayout()
         {
             LockerUnit unit = new LockerUnit();
@@ -43,14 +45,19 @@ namespace SmartLocker.Models
             return unit;
         }
 
-        // marks boxes as occupied based on the stored parcels
-        // collected parcels keep their compartment id as history but dont block the box
+        // marks which boxes are taken, based on the parcel list
+
         public void ApplyOccupancy(List<Parcel> parcels)
         {
+            // first we set every box to free
             foreach (LockerCompartment compartment in compartments)
             {
                 compartment.OccupiedByParcelId = null;
             }
+
+            
+            // only stored parcels take a box
+            // collected ones keep their old box id, but the box is free again
 
             foreach (Parcel parcel in parcels)
             {
@@ -64,7 +71,7 @@ namespace SmartLocker.Models
                 }
             }
         }
-
+        // finds a box by its id, null if there is no such box
         public LockerCompartment FindById(int id)
         {
             foreach (LockerCompartment compartment in compartments)
@@ -77,6 +84,7 @@ namespace SmartLocker.Models
             return null;
         }
 
+        // counts the empty boxes
         public int CountFree()
         {
             int free = 0;
@@ -90,7 +98,8 @@ namespace SmartLocker.Models
             return free;
         }
 
-        // best fit: smallest free box that can hold the parcel, smaller id wins on a tie
+        // best fit: the smallest free box where the parcel fits
+        // if two boxes have the same size, the one with the smaller id wins
         // returns null if nothing fits right now
         public LockerCompartment FindBestCompartment(ParcelSize parcelSize)
         {
@@ -119,8 +128,8 @@ namespace SmartLocker.Models
 
             return best;
         }
-
-        // LINQ #2: GroupBy on the compartment objects -> free and occupied count per size
+        // linq #2: groups the boxes by size and counts free and occupied ones
+        // this is done in c#, not with sql group by
         public List<SizeOccupancy> GetOccupancyBySize()
         {
             return compartments
