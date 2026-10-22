@@ -3,14 +3,14 @@ using SmartLocker.Models;
 
 namespace SmartLocker.Data
 {
-    // creates the tables (if missing) and the 24 compartments
+    // creates the tables and compartments
     public static class DatabaseInitializer
     {
         public static void Initialize(string connectionString)
         {
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
-                // opening creates smartlocker.db if it doesnt exist yet
+                // if smartlocker.db doesnt exist yet, this creates it
                 connection.Open();
 
                 string createTables = @"
@@ -29,11 +29,11 @@ namespace SmartLocker.Data
                         PickupCode    TEXT NULL
                     );
 
-                    -- two stored parcels can never be in the same box
+                    -- two stored parcels cant be in the same box
                     CREATE UNIQUE INDEX IF NOT EXISTS UX_Parcels_StoredCompartment
                         ON Parcels(CompartmentId) WHERE Status = 'Stored';
 
-                    -- no two stored parcels with the same pickup code
+                    -- two stored parcels cant have the same pickup code
                     CREATE UNIQUE INDEX IF NOT EXISTS UX_Parcels_StoredPickupCode
                         ON Parcels(PickupCode) WHERE Status = 'Stored';";
 
@@ -43,7 +43,7 @@ namespace SmartLocker.Data
                     command.ExecuteNonQuery();
                 }
 
-                // insert the 24 boxes only once, INSERT OR IGNORE skips ids that already exist
+                // adds the 24 boxes, INSERT OR IGNORE skips them if they already exist
                 LockerUnit layout = LockerUnit.CreateStandardLayout();
                 using (SQLiteTransaction transaction = connection.BeginTransaction())
                 {

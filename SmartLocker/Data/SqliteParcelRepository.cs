@@ -5,12 +5,12 @@ using SmartLocker.Models;
 
 namespace SmartLocker.Data
 {
+    // all database work with sqlite, every query uses parameters (@...)
     public class SqliteParcelRepository : IParcelRepository
     {
         private readonly string connectionString;
 
-        // the worker thread and the ui thread both use the db,
-        // so only one of them may talk to it at a time
+        // protects the database from the ui and worker threads
         private static readonly object dbLock = new object();
 
         public SqliteParcelRepository(string connectionString)
@@ -36,7 +36,7 @@ namespace SmartLocker.Data
             }
         }
 
-        // used by the dataset generator, one transaction = fast and all-or-nothing
+        // used by the dataset generator, all rows in one transaction
         public void AddParcels(List<Parcel> parcels)
         {
             lock (dbLock)
@@ -60,7 +60,7 @@ namespace SmartLocker.Data
                 command.Transaction = transaction;
                 command.CommandText = @"INSERT INTO Parcels (Recipient, Size, ServiceType, Status, CompartmentId, PickupCode)
                                         VALUES (@recipient, @size, @service, @status, NULL, NULL);
-                                        SELECT last_insert_rowid();";
+                                        SELECT last_insert_rowid();";   // returns the new id
                 command.Parameters.AddWithValue("@recipient", parcel.Recipient);
                 command.Parameters.AddWithValue("@size", parcel.Size.ToString());
                 command.Parameters.AddWithValue("@service", parcel.ServiceType.ToString());
@@ -96,7 +96,7 @@ namespace SmartLocker.Data
             return parcels;
         }
 
-        // turns one db row into the right parcel subclass
+        // makes an ExpressParcel or StandardParcel from one row
         private Parcel ReadParcel(SQLiteDataReader reader)
         {
             string recipient = reader.GetString(1);
@@ -137,7 +137,7 @@ namespace SmartLocker.Data
             return parcel;
         }
 
-        // reads the boxes from the db and marks which ones are taken
+        // loads the boxes and marks which ones are taken
         public LockerUnit LoadLockerUnit()
         {
             LockerUnit unit = new LockerUnit();
@@ -191,6 +191,8 @@ namespace SmartLocker.Data
             }
         }
 
+        // box + code + stored status in one transaction
+        // if any check fails we rollback and nothing changes
         public bool StoreParcel(int parcelId, int compartmentId, string pickupCode)
         {
             lock (dbLock)
@@ -198,7 +200,7 @@ namespace SmartLocker.Data
                 using (SQLiteConnection connection = OpenConnection())
                 using (SQLiteTransaction transaction = connection.BeginTransaction())
                 {
-                    // check 1: the box must be free
+                    // make sure the box is free
                     using (SQLiteCommand check = connection.CreateCommand())
                     {
                         check.Transaction = transaction;
@@ -211,7 +213,7 @@ namespace SmartLocker.Data
                         }
                     }
 
-                    // check 2: the code must not belong to another stored parcel
+                    // make sure the code is not already in use
                     using (SQLiteCommand check = connection.CreateCommand())
                     {
                         check.Transaction = transaction;
@@ -224,7 +226,7 @@ namespace SmartLocker.Data
                         }
                     }
 
-                    // the actual update, only if the parcel is still waiting
+                    // only works if the parcel is still waiting
                     int changedRows;
                     using (SQLiteCommand update = connection.CreateCommand())
                     {
@@ -250,6 +252,8 @@ namespace SmartLocker.Data
             }
         }
 
+        // stored -> collected in one transaction
+        // wrong or already used code -> rollback, nothing changes
         public Parcel CollectParcel(string pickupCode)
         {
             lock (dbLock)
@@ -259,7 +263,6 @@ namespace SmartLocker.Data
                 {
                     Parcel parcel = null;
 
-                    // find the ONE stored parcel with this code
                     using (SQLiteCommand find = connection.CreateCommand())
                     {
                         find.Transaction = transaction;
@@ -275,14 +278,13 @@ namespace SmartLocker.Data
                         }
                     }
 
-                    // wrong code or already collected -> nothing changes
                     if (parcel == null)
                     {
                         transaction.Rollback();
                         return null;
                     }
 
-                    // compartment id stays as history, the status change frees the box
+                    // the compartment id stays as history, the box is free because the status changed
                     using (SQLiteCommand update = connection.CreateCommand())
                     {
                         update.Transaction = transaction;

@@ -3,7 +3,7 @@ using SmartLocker.Models;
 
 namespace SmartLocker.Data
 {
-    // what the app needs from the database, without saying HOW (abstraction)
+    // what the database can do, the sqlite class says how
     public interface IParcelRepository
     {
         int AddParcel(Parcel parcel);
@@ -13,10 +13,10 @@ namespace SmartLocker.Data
         int CountParcels();
         bool IsPickupCodeInUse(string pickupCode);
 
-        // waiting -> stored, compartment + code in one transaction
+        // waiting -> stored in one transaction, false if something is already taken
         bool StoreParcel(int parcelId, int compartmentId, string pickupCode);
 
-        // stored -> collected in one transaction, returns null if the code is not valid
+        // stored -> collected, null if the code is wrong or already used
         Parcel CollectParcel(string pickupCode);
     }
 }
