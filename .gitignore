@@ -8,3 +8,4 @@ obj/
 *.db-shm
 *.db-wal
 *.db-journal
+packages/
