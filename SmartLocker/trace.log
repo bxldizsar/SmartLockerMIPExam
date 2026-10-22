@@ -1,0 +1,34 @@
+2026-10-22 13:47:17.644 | APP_START
+[2026-10-22 13:47:18.0394908] System.Data.SQLite (Preload): Native library pre-loader is trying to load native SQLite library "C:\Users\boldi\source\repos\SmartLocker\SmartLocker\bin\Debug\x64\SQLite.Interop.dll"...
+2026-10-22 13:51:47.482 | APP_START
+[2026-10-22 13:51:47.5440087] System.Data.SQLite (Preload): Native library pre-loader is trying to load native SQLite library "C:\Users\boldi\source\repos\SmartLocker\SmartLocker\bin\Debug\x64\SQLite.Interop.dll"...
+2026-10-22 14:01:21.620 | APP_START
+[2026-10-22 14:01:21.6586413] System.Data.SQLite (Preload): Native library pre-loader is trying to load native SQLite library "C:\Users\boldi\source\repos\SmartLocker\SmartLocker\bin\Debug\x64\SQLite.Interop.dll"...
+2026-10-22 14:01:57.337 | STORED | ParcelId=1 | CompartmentId=1
+2026-10-22 14:01:57.679 | STORED | ParcelId=3 | CompartmentId=17
+2026-10-22 14:01:58.022 | STORED | ParcelId=5 | CompartmentId=9
+2026-10-22 14:01:58.364 | STORED | ParcelId=7 | CompartmentId=2
+2026-10-22 14:01:58.706 | STORED | ParcelId=9 | CompartmentId=18
+2026-10-22 14:01:59.047 | STORED | ParcelId=11 | CompartmentId=10
+2026-10-22 14:01:59.389 | STORED | ParcelId=13 | CompartmentId=3
+2026-10-22 14:01:59.743 | STORED | ParcelId=15 | CompartmentId=19
+2026-10-22 14:02:00.077 | STORED | ParcelId=17 | CompartmentId=11
+2026-10-22 14:02:00.417 | STORED | ParcelId=19 | CompartmentId=4
+2026-10-22 14:02:00.758 | STORED | ParcelId=21 | CompartmentId=20
+2026-10-22 14:02:01.098 | STORED | ParcelId=23 | CompartmentId=12
+2026-10-22 14:02:01.446 | STORED | ParcelId=25 | CompartmentId=5
+2026-10-22 14:02:01.782 | STORED | ParcelId=27 | CompartmentId=21
+2026-10-22 14:02:02.134 | STORED | ParcelId=29 | CompartmentId=13
+2026-10-22 14:02:02.473 | STORED | ParcelId=31 | CompartmentId=6
+2026-10-22 14:02:02.815 | STORED | ParcelId=33 | CompartmentId=22
+2026-10-22 14:02:03.177 | STORED | ParcelId=35 | CompartmentId=14
+2026-10-22 14:02:03.517 | STORED | ParcelId=37 | CompartmentId=7
+2026-10-22 14:02:03.877 | STORED | ParcelId=39 | CompartmentId=23
+2026-10-22 14:02:04.228 | STORED | ParcelId=41 | CompartmentId=15
+2026-10-22 14:02:04.593 | STORED | ParcelId=43 | CompartmentId=8
+2026-10-22 14:02:04.951 | STORED | ParcelId=45 | CompartmentId=24
+2026-10-22 14:02:05.321 | STORED | ParcelId=47 | CompartmentId=16
+2026-10-22 14:02:47.084 | COLLECTED | ParcelId=1 | CompartmentId=1
+2026-10-22 14:02:55.680 | COLLECTED | ParcelId=3 | CompartmentId=17
+2026-10-22 14:03:20.486 | STORED | ParcelId=49 | CompartmentId=1
+2026-10-22 14:03:20.829 | STORED | ParcelId=51 | CompartmentId=17
