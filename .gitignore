@@ -1,0 +1,10 @@
+# build output
+bin/
+obj/
+.vs/
+*.user
+*.suo
+# sqlite temp files (the main smartlocker.db IS committed)
+*.db-shm
+*.db-wal
+*.db-journal
